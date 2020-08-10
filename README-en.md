@@ -24,11 +24,11 @@ The unity joins Apple's in-app purchases.
 
 You need to add the required files for Objective-C in Unity project, the directory structure is as follows:
 
-objc ______ store_manager _________ DYFStoreManager.h
-|                           |__________________ DYFStoreManager.mm
-|
-|_______________ UnityIAPConnector.h
-|_______________ UnityIAPConnector.mm
+objc ______ store_manager _________ DYFStoreManager.h  <br>
+| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |__________________ DYFStoreManager.mm <br>
+|                                                                                                <br>
+|_______________ UnityIAPConnector.h      <br>
+|_______________ UnityIAPConnector.mm  <br>
 
 ### 2. Add CS script.
 
@@ -36,7 +36,7 @@ You need to add the required CS script of in-app purchase for iOS in Unity proje
 
 unity_cs ______ U3DIAPManager.cs
 
-### 3、Add `DYFStoreKit` directory files
+### 3、Add `DYFStoreKit` directory files.
 
 Use `pod 'DYFStoreKit'` to add the latest version of in-app purchas library for iOS, or manually add [DYFStoreKit](https://github.com/dgynfi/DYFStoreKit/tree/master/DYFStoreKit ) directory.
 
