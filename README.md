@@ -24,8 +24,8 @@ Unity加入了苹果的应用内购买。
 在 Unity 工程中添加 Objective-C 所需要的文件，其目录结构如下：
 
 objc ______ store_manager _________ DYFStoreManager.h      <br>
-|                           |__________________ DYFStoreManager.mm <br>
-|                                                                                                   <br>
+|                            |__________________ DYFStoreManager.mm <br>
+|                                                                                                    <br>
 |_______________ UnityIAPConnector.h      <br>
 |_______________ UnityIAPConnector.mm  <br>
 
