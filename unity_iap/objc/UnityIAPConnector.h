@@ -65,6 +65,7 @@ typedef NS_ENUM(int, UNMsgCallbackType) {
     UN_MSG_CBTYPE_INCOMPLETED_TRANSACTIONS = 17
 };
 
+/// The empty string for Objective-C.
 extern NSString *const OCEmptyString;
 
 extern void UNCallbackMessageDataToUnity(int msgCode, id msgData);

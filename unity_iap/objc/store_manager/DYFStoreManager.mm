@@ -301,11 +301,11 @@ static DYFStoreManager *_instance = nil;
     MKVContainer *item = [MKVContainer container];
     [item setValue:@(state) forKey:@"t_state"];
     [item setValue:productId forKey:@"p_id"];
-    [item setValue:userId ?: @"null" forKey:@"u_id"]; // [NSNull null]
+    [item setValue:userId ?: [NSNull null] forKey:@"u_id"];
     [item setValue:transId forKey:@"t_id"];
     [item setValue:transTs forKey:@"t_ts"];
-    [item setValue:orgTransId ?: @"null" forKey:@"orgt_id"];
-    [item setValue:orgTransTs ?: @"null" forKey:@"orgt_ts"];
+    [item setValue:orgTransId ?: [NSNull null] forKey:@"orgt_id"];
+    [item setValue:orgTransTs ?: [NSNull null] forKey:@"orgt_ts"];
     [item setValue:receipt forKey:@"t_receipt"];
     UNCallbackMessageDataToUnity(msgCode, item);
 }
@@ -324,11 +324,11 @@ static DYFStoreManager *_instance = nil;
             MKVContainer *item = [MKVContainer container];
             [item setValue:@(t.state) forKey:@"t_state"];
             [item setValue:t.productIdentifier forKey:@"p_id"];
-            [item setValue:t.userIdentifier ?: @"null" forKey:@"u_id"]; // [NSNull null]
+            [item setValue:t.userIdentifier ?: [NSNull null] forKey:@"u_id"];
             [item setValue:t.transactionIdentifier forKey:@"t_id"];
             [item setValue:t.transactionTimestamp forKey:@"t_ts"];
-            [item setValue:t.originalTransactionIdentifier ?: @"null" forKey:@"orgt_id"];
-            [item setValue:t.originalTransactionTimestamp ?: @"null" forKey:@"orgt_ts"];
+            [item setValue:t.originalTransactionIdentifier ?: [NSNull null] forKey:@"orgt_id"];
+            [item setValue:t.originalTransactionTimestamp ?: [NSNull null] forKey:@"orgt_ts"];
             [item setValue:t.transactionReceipt forKey:@"t_receipt"];
             
             [mArr addObject:item];
