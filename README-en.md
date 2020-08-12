@@ -6,7 +6,7 @@ If this project can help you, please give it [a star](https://github.com/dgynfi/
 
 ## Unity_iOS_InAppPurchase
 
-The unity joins Apple's in-app purchases.
+Unity implements Apple's in-app purchases for iOS.
 
 [![License MIT](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](LICENSE)&nbsp;
 
@@ -24,17 +24,17 @@ The unity joins Apple's in-app purchases.
 
 You need to add the required files for Objective-C in Unity project, the directory structure is as follows:
 
-objc ______ store_manager _________ DYFStoreManager.h  <br>
-| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |__________________ DYFStoreManager.mm <br>
-|                                                                                                <br>
-|_______________ UnityIAPConnector.h      <br>
-|_______________ UnityIAPConnector.mm  <br>
+objc __ store_manager __ DYFStoreManager.h <br>
+| &emsp;&emsp;&emsp;&emsp;|__ DYFStoreManager.mm <br>
+|                        <br>
+|__ UnityIAPConnector.h  <br>
+|__ UnityIAPConnector.mm <br>
 
-### 2. Add CS script.
+### 2. Add cs script.
 
-You need to add the required CS script of in-app purchase for iOS in Unity project.
+You need to add the required cs script of in-app purchase for iOS in Unity project.
 
-unity_cs ______ U3DIAPManager.cs
+unity_cs __ UnityIAPManager.cs
 
 ### 3、Add `DYFStoreKit` directory files.
 
@@ -53,7 +53,7 @@ Adds header file `#import "DYFStoreManager.h"` in UnityAppController.mm.
 
 - Adds the observer, set up the delegate and data persistence.
 
-As long as you add the following three pieces of code before returning, the rest of the code does not change.
+As long as you add the following three pieces of code before the method return value, the rest of the code does not change.
 
 ```
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
@@ -193,7 +193,7 @@ case (int)CallbackType.Action_GetProductsSuccessfully:
 private void parseProductList(JArray jarr)
 {
     try {
-        LogManager.Log ("parseProductList... jarr: " + jarr);
+        LogManager.Log ("parseProductList... jarr: " + jarr.ToString());
 
         for(int i = 0; i < jarr.Count; i++) {
 
@@ -256,6 +256,20 @@ public void restoreTransactions(string userId)
 If the receipt is invalid or missing, refresh the App Store's receipt.
 
 ```
+case(int)CallbackType.Action_RefreshReceipt: 
+{
+    LogManager.Log ("CallbackType.Action_RefreshReceipt");
+
+    // Tips: The receipt needs to be refreshed.
+    string desc = (string)json["msg_data"]["m_desc"];
+    LogManager.Log("err_desc=", desc);
+    refreshReceipt()
+
+    break;
+}
+```
+
+```
 public void refreshReceipt()
 {
     if (Application.platform != RuntimePlatform.OSXEditor) {
@@ -274,7 +288,7 @@ public void refreshReceipt()
 private void verifyReceipt(JObject jo)
 {
     try {
-        //LogManager.Log ("verifyReceipt... jo: " + jo.ToString());
+        LogManager.Log ("verifyReceipt... jo: " + jo.ToString());
 
         int state = int.Parse(jo["t_state"].ToString);
         string productId = jo["p_id"].ToString();
@@ -308,6 +322,7 @@ private void requestToVerifyReceipt(string productId, string transId, string bas
     // https://www.jianshu.com/p/de030cd6e4a3
     // https://www.jianshu.com/p/1875e0c7ac5d
     
+    // Performs http request or builds tcp/udp connection.
 }
 ```
 
