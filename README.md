@@ -5,7 +5,7 @@
 
 ## Unity_iOS_InAppPurchase
 
-Unity加入了苹果的应用内购买。
+Unity实现苹果iOS的应用内购买。
 
 [![License MIT](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](LICENSE)&nbsp;
 
@@ -23,17 +23,17 @@ Unity加入了苹果的应用内购买。
 
 在 Unity 工程中添加 Objective-C 所需要的文件，其目录结构如下：
 
-objc ______ store_manager _________ DYFStoreManager.h  <br>
-| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |__________________ DYFStoreManager.mm <br>
-|                                                                                                <br>
-|_______________ UnityIAPConnector.h      <br>
-|_______________ UnityIAPConnector.mm  <br>
+objc __ store_manager __ DYFStoreManager.h <br>
+| &emsp;&emsp;&emsp;&emsp;|__ DYFStoreManager.mm <br>
+|                        <br>
+|__ UnityIAPConnector.h  <br>
+|__ UnityIAPConnector.mm <br>
 
 ### 2、添加 cs 脚本
 
 在 Unity 工程中添加 iOS 内购实现所需要的 cs 脚本。
 
-unity_cs ______ U3DIAPManager.cs
+unity_cs __ UnityIAPManager.cs
 
 ### 3、添加 DYFStoreKit 目录文件
 
@@ -52,7 +52,7 @@ unity_cs ______ U3DIAPManager.cs
 
 - 添加观察者、设置代理和数据持久
 
-只要在返回前添加以下三段代码，其他代码不要改变。
+只要在方法返回值前添加以下三段代码，其他代码不要改变。
 
 ```
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
@@ -193,7 +193,7 @@ case (int)CallbackType.Action_GetProductsSuccessfully:
 private void parseProductList(JArray jarr)
 {
     try {
-        LogManager.Log ("parseProductList... jarr: " + jarr);
+        LogManager.Log ("parseProductList... jarr: " + jarr.ToString());
 
         for(int i = 0; i < jarr.Count; i++) {
 
@@ -256,6 +256,20 @@ public void restoreTransactions(string userId)
 如果票据无效或丢失，就要刷新App Store票据。
 
 ```
+case(int)CallbackType.Action_RefreshReceipt: 
+{
+    LogManager.Log ("CallbackType.Action_RefreshReceipt");
+
+    // Tips: The receipt needs to be refreshed.
+    string desc = (string)json["msg_data"]["m_desc"];
+    LogManager.Log("err_desc=", desc);
+    refreshReceipt()
+
+    break;
+}
+```
+
+```
 public void refreshReceipt()
 {
     if (Application.platform != RuntimePlatform.OSXEditor) {
@@ -274,7 +288,7 @@ public void refreshReceipt()
 private void verifyReceipt(JObject jo)
 {
     try {
-        //LogManager.Log ("verifyReceipt... jo: " + jo.ToString());
+        LogManager.Log ("verifyReceipt... jo: " + jo.ToString());
 
         int state = int.Parse(jo["t_state"].ToString);
         string productId = jo["p_id"].ToString();
@@ -308,6 +322,7 @@ private void requestToVerifyReceipt(string productId, string transId, string bas
     // https://www.jianshu.com/p/de030cd6e4a3
     // https://www.jianshu.com/p/1875e0c7ac5d
     
+    // Performs http request or builds tcp/udp connection.
 }
 ```
 
