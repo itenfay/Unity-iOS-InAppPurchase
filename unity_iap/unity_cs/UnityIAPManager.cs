@@ -1,10 +1,10 @@
 ﻿/// 
-/// File Name: U3DIAPManager.cs
+/// File Name: UnityIAPManager.cs
 /// 
 /// Author: dyf
 ///
 /// Brief:
-///   The unity joins Apple's in-app purchases.
+///   Unity implements Apple's in-app purchases for iOS.
 ///
 /// Log:
 ///   1. created, 2020-04-16, dyf.
@@ -17,7 +17,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 
-public class U3DIAPManager : com.u3d.dl.core.SingletonObject<U3DIAPManager>
+public class UnityIAPManager : com.dl.core.SingletonObject<UnityIAPManager>
 {
 
 	protected override void Spawn ()
@@ -105,7 +105,7 @@ public class U3DIAPManager : com.u3d.dl.core.SingletonObject<U3DIAPManager>
 	{
 		LogManager.Log("initUnityMsgCallback=" + gameObject + "," + func);
 #if !UNITY_EDITOR && UNITY_IOS
-		DYFInitUnityMsgCallback(gameObject, func);
+		DYFInitUnityMsgCallback(gameObject, func); // UMessageCallback(string msg)
 #endif
 	}
 
@@ -186,7 +186,7 @@ public class U3DIAPManager : com.u3d.dl.core.SingletonObject<U3DIAPManager>
 		}
 	}
 	
-	public void U3DIAPCallback(string msg)
+	public void UMessageCallback(string msg)
 	{
 		LogManager.Log ("U3DIAPCallback: " + msg, LogType.Normal);
 
@@ -438,7 +438,7 @@ public class U3DIAPManager : com.u3d.dl.core.SingletonObject<U3DIAPManager>
 	private void parseProductList(JArray jarr)
 	{
 		try {
-			LogManager.Log ("parseProductList... jarr: " + jarr);
+			LogManager.Log ("parseProductList... jarr: " + jarr.ToString());
 
 			for(int i = 0; i < jarr.Count; i++) {
 
@@ -467,7 +467,7 @@ public class U3DIAPManager : com.u3d.dl.core.SingletonObject<U3DIAPManager>
 	private void verifyReceipt(JObject jo)
 	{
 		try {
-			//LogManager.Log ("verifyReceipt... jo: " + jo.ToString());
+			LogManager.Log ("verifyReceipt... jo: " + jo.ToString());
 
 			int state = int.Parse(jo["t_state"].ToString);
 			string productId = jo["p_id"].ToString();
@@ -501,6 +501,7 @@ public class U3DIAPManager : com.u3d.dl.core.SingletonObject<U3DIAPManager>
 		// https://www.jianshu.com/p/de030cd6e4a3
 		// https://www.jianshu.com/p/1875e0c7ac5d
 		
+		// Performs http request or builds tcp/udp connection.
 	}
 
 }
