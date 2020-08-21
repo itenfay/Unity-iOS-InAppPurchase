@@ -496,8 +496,9 @@ public class UnityIAPManager : com.dl.core.SingletonObject<UnityIAPManager>
 		// Finally, you call this method to complete the transaction.
 		// finishTransaction(transactionId); finishTransaction(orgTransactionId); 
 
-		// Recommended reference link:
+		// Recommended reference links:
 		// https://dgynfi.github.io/2016/10/16/in-app-purchase-complete-programming-guide-for-iOS/
+		// https://dgynfi.github.io/2016/10/12/how-to-easily-complete-in-app-purchase-configuration-for-iOS/
 		// https://www.jianshu.com/p/de030cd6e4a3
 		// https://www.jianshu.com/p/1875e0c7ac5d
 		
