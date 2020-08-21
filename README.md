@@ -1,4 +1,4 @@
-## Unity_iOS_InAppPurchase
+## Unity-iOS-InAppPurchase
 
 Unity implements Apple's in-app purchases for iOS.
 
