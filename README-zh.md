@@ -1,4 +1,4 @@
-## Unity_iOS_InAppPurchase
+## Unity-iOS-InAppPurchase
 
 Unity实现苹果iOS的应用内购买。
 
