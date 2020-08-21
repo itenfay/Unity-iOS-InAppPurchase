@@ -1,58 +1,55 @@
-## [英文文档（English Document）](README-en.md)
-
-如果此项目能帮助到你，就请你给[一颗星](https://github.com/dgynfi/Unity_iOS_InAppPurchase)。谢谢！
-
-
 ## Unity_iOS_InAppPurchase
 
-Unity实现苹果iOS的应用内购买。
+Unity implements Apple's in-app purchases for iOS.
 
 [![License MIT](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](LICENSE)&nbsp;
 
+[Chinese Instructions (中文说明)](README-zh.md)
 
-## QQ群 (ID:614799921)
+
+## Group (ID:614799921)
 
 <div align=left>
 &emsp; <img src="https://github.com/dgynfi/DYFStoreKit/raw/master/images/g614799921.jpg" width="30%" />
 </div>
 
 
-## 使用
+## Usage
 
-### 1、添加 Objective-C 所需要的文件
+### 1. Add the required files for Objective-C.
 
-在 Unity 工程中添加 Objective-C 所需要的文件，其目录结构如下：
+You need to add the required files for Objective-C in Unity project, the directory structure is as follows:
 
 objc __ store_manager __ DYFStoreManager.h <br>
-| &emsp;&emsp;&emsp;&emsp;|__ DYFStoreManager.mm <br>
+| &emsp;&emsp;&emsp;&emsp;&emsp; |__ DYFStoreManager.mm <br>
 |                        <br>
 |__ UnityIAPConnector.h  <br>
 |__ UnityIAPConnector.mm <br>
 
-### 2、添加 cs 脚本
+### 2. Add cs script.
 
-在 Unity 工程中添加 iOS 内购实现所需要的 cs 脚本。
+You need to add the required cs script of in-app purchase for iOS in Unity project.
 
 unity_cs __ UnityIAPManager.cs
 
-### 3、添加 DYFStoreKit 目录文件
+### 3、Add `DYFStoreKit` directory files.
 
-使用 `pod 'DYFStoreKit'` 添加最新版本的 iOS 内购库，或者手动添加 [DYFStoreKit](https://github.com/dgynfi/DYFStoreKit/tree/master/DYFStoreKit) 目录。
+Use `pod 'DYFStoreKit'` to add the latest version of in-app purchas library for iOS, or manually add [DYFStoreKit](https://github.com/dgynfi/DYFStoreKit/tree/master/DYFStoreKit ) directory.
 
-### 4、添加交易监听和其他
+### 4、Adds the transaction observer and others.
 
-在 UnityAppController.mm 中添加头文件 `#import "DYFStoreManager.h"`
+Adds header file `#import "DYFStoreManager.h"` in UnityAppController.mm.
 
-- 遵守协议
+- Comply with the agreement.
 
 ```
 @interface UnityAppController() <DYFStoreAppStorePaymentDelegate>
 @end
 ```
 
-- 添加观察者、设置代理和数据持久
+- Adds the observer, set up the delegate and data persistence.
 
-只要在方法返回值前添加以下三段代码，其他代码不要改变。
+As long as you add the following three pieces of code before the method return value, the rest of the code does not change.
 
 ```
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
@@ -71,7 +68,7 @@ unity_cs __ UnityIAPManager.cs
 }
 ```
 
-- 你可以处理用户从App Store发起的购买 (iOS 11.0+)
+- You can process the purchase which was initiated by user from the App Store. (iOS 11.0+)
 
 ```
 // Processes the purchase which was initiated by user from the App Store.
@@ -93,9 +90,9 @@ unity_cs __ UnityIAPManager.cs
 }
 ```
 
-### 5、注意事项
+### 5. Points for attention.
 
-- 初始化 Unity 回调对象和函数
+- Initializes the unity callback game object and function.
 
 ```
 public void initUnityMsgCallback(string gameObject, string func)
@@ -107,9 +104,9 @@ public void initUnityMsgCallback(string gameObject, string func)
 }
 ```
 
-- 单个商品购买
+- The purchase of a single product.
 
-如果你的应用含有购买的 UI 界面和商品展示信息，用户就只需要选择购买。 缺点就是程序要做当地价格匹配。
+If your app contains purchased UI interface and product display information, users only need to choose to purchase. The disadvantage is that the program has to do local price matching.
 
 ```
 public void retrieveProduct(string productId)
@@ -124,7 +121,7 @@ public void retrieveProduct(string productId)
 }
 ```
 
-当程序得到成功的回调时，就可以解析数据进行添加付款了。其他情况程序要对用户弹框提示。
+When the program gets a successful callback, you can parse the data and add the payment. In other cases, the program should prompt the user with a pop-up box.
 
 ```
 case (int)CallbackType.Action_GetProductSuccessfully:
@@ -140,9 +137,9 @@ case (int)CallbackType.Action_GetProductSuccessfully:
 }
 ````
 
-- 请求多个商品并展示购买的 UI 界面
+- Requests multiple products and display the purchased UI interface.
 
-一次请求多个商品，通过工具获得商品的本地化信息。
+You can request multiple products at a time and get the localized information of the product through the tool.
 
 ```
 // You can either return the value or get a set of product identifiers from your server.
@@ -176,8 +173,7 @@ public void retrieveProducts()
 }
 ```
 
-当程序得到成功的回调时，就可以解析数据进行展示购买的 UI 界面。其他情况程序要对用户弹框提示。
-
+When the program gets a successful callback, it can parse the data to display the UI interface of the purchase. In other cases, the program should prompt the user with a pop-up box.
 
 ```
 case (int)CallbackType.Action_GetProductsSuccessfully:
@@ -220,7 +216,7 @@ private void displayStorePanel() {
 }
 ```
 
-用户选择购买商品，用户 id 可根据需要进行设置。
+The user chooses to purchase product, and the user ID can be set as needed.
 
 ```
 public void addPayment(string productId, string userId)
@@ -235,7 +231,7 @@ public void addPayment(string productId, string userId)
 }
 ```
 
-- 恢复已经完成的交易，用户 id 可选
+- Restores the completed transactions, user ID is optional.
 
 ```
 public void restoreTransactions(string userId)
@@ -251,9 +247,9 @@ public void restoreTransactions(string userId)
 }
 ```
 
-- 刷新票据
+- Refreshes receipt.
 
-如果票据无效或丢失，就要刷新App Store票据。
+If the receipt is invalid or missing, refresh the App Store's receipt.
 
 ```
 case(int)CallbackType.Action_RefreshReceipt: 
@@ -282,7 +278,7 @@ public void refreshReceipt()
 }
 ```
 
--  票据验证
+- Receipt verification.
 
 ```
 private void verifyReceipt(JObject jo)
@@ -317,8 +313,9 @@ private void requestToVerifyReceipt(string productId, string transId, string bas
     // Finally, you call this method to complete the transaction.
     // finishTransaction(transactionId); finishTransaction(orgTransactionId); 
 
-    // Recommended reference link:
+    // Recommended reference links:
     // https://dgynfi.github.io/2016/10/16/in-app-purchase-complete-programming-guide-for-iOS/
+    // https://dgynfi.github.io/2016/10/12/how-to-easily-complete-in-app-purchase-configuration-for-iOS/
     // https://www.jianshu.com/p/de030cd6e4a3
     // https://www.jianshu.com/p/1875e0c7ac5d
     
@@ -326,7 +323,7 @@ private void requestToVerifyReceipt(string productId, string transId, string bas
 }
 ```
 
-最后，在票据验证通过后，你要完成相应的交易。
+Finally, after the receipt is verified, you need to complete the corresponding transaction.
 
 ```
 public void finishTransaction(string transactionId)
@@ -340,9 +337,9 @@ public void finishTransaction(string transactionId)
 }
 ```
 
-- 查询未完成的交易
+- Queries those incompleted transactions.
 
-如果票据存在keychain并且没有完成验证，那么你需要查询出来，然后一一进行上报，直至交易，进而删除 keychain 中相应的记录。
+If there are the receipts in keychain and the receipt verification has not been completed, you need to query them out, and then report them one by one until the transaction, and then delete the corresponding record in the keychain.
 
 ```
 public void queryIncompletedTransactions()
@@ -356,11 +353,20 @@ public void queryIncompletedTransactions()
 }
 ```
 
-## 要求
 
-`Unity_iOS_InAppPurchase`需要`iOS 7.0`或更高版本和ARC。
+## Recommended Reference Links
+
+- [https://dgynfi.github.io/2016/10/16/in-app-purchase-complete-programming-guide-for-iOS/](https://dgynfi.github.io/2016/10/16/in-app-purchase-complete-programming-guide-for-iOS/)
+- [https://dgynfi.github.io/2016/10/12/how-to-easily-complete-in-app-purchase-configuration-for-iOS/](https://dgynfi.github.io/2016/10/12/how-to-easily-complete-in-app-purchase-configuration-for-iOS/)
+- [https://www.jianshu.com/p/de030cd6e4a3](https://www.jianshu.com/p/de030cd6e4a3)
+- [https://www.jianshu.com/p/1875e0c7ac5d](https://www.jianshu.com/p/1875e0c7ac5d)
 
 
-## 欢迎反馈
+## Requirements
 
-如果你注意到任何问题，被卡住或只是想聊天，请随意创建一个问题。我很乐意帮助你。
+`Unity_iOS_InAppPurchase` requires `iOS 7.0` or above and `ARC`.
+
+
+## Feedback is welcome
+
+If you notice any issue, got stuck or just want to chat feel free to create an issue. I will be happy to help you.
