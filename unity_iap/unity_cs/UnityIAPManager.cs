@@ -17,6 +17,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 
+// Note: You need to change "com.dl.core.SingletonObject" to your's package.
 public class UnityIAPManager : com.dl.core.SingletonObject<UnityIAPManager>
 {
 
@@ -85,15 +86,21 @@ public class UnityIAPManager : com.dl.core.SingletonObject<UnityIAPManager>
 	
 #endif
 
+	// Note: You can get the array from the server or write the fixed values.
 	private JArray getJArrayOfProductIds()
 	{	
 		JArray a = new JArray();
-		foreach (var obj in LaunchMng.IAPDict) {
-			a.Add(obj.Value);
-		}
+		a.Add("com.xx.gm.pack1");
+		a.Add("com.xx.gm.pack2");
+		a.Add("com.xx.gm.pack3");
+		a.Add("com.xx.gm.pack4");
+		a.Add("com.xx.gm.pack5");
+		a.Add("com.xx.gm.pack6");
+		// ......
 		return a;
 	}
 
+	// Note: You can get a json string from a jarray.
 	private string getJsonOfProductIds()
 	{
 		JArray a = getJArrayOfProductIds();
