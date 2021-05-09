@@ -32,7 +32,7 @@ unity_cs __ UnityIAPManager.cs
 
 ### 3、添加 DYFStoreKit 目录文件
 
-使用 `pod 'DYFStoreKit'` 添加最新版本的 iOS 内购库，或者手动添加 [DYFStoreKit](https://github.com/dgynfi/DYFStoreKit/tree/master/DYFStoreKit) 目录。
+使用 `pod 'DYFStoreKit'` 添加最新版本的 iOS 内购库。
 
 ### 4、添加交易监听和其他
 
@@ -59,8 +59,6 @@ unity_cs __ UnityIAPManager.cs
     
     // Sets the delegate processes the purchase which was initiated by user from the App Store.
     DYFStore.defaultStore.delegate = self;
-    
-    DYFStore.defaultStore.keychainPersister = [[DYFStoreKeychainPersistence alloc] init];
     
     return YES;
 }
