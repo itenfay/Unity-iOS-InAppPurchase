@@ -186,8 +186,7 @@ static DYFStoreManager *_instance = nil;
 
 - (void)completePayment {
     DYFStoreNotificationInfo *info = self.purchaseInfo;
-    DYFStore *store = DYFStore.defaultStore;
-    DYFStoreKeychainPersistence *persister = store.keychainPersister;
+    DYFStoreUserDefaultsPersistence *persister = [[DYFStoreUserDefaultsPersistence alloc] init];
     
     NSString *identifier = info.transactionIdentifier;
     if (![persister containsTransaction:identifier]) {
@@ -210,11 +209,9 @@ static DYFStoreManager *_instance = nil;
     }
     
     DYFStoreNotificationInfo *info = self.purchaseInfo;
-    DYFStore *store = DYFStore.defaultStore;
-    DYFStoreKeychainPersistence *persister = store.keychainPersister;
+    DYFStoreUserDefaultsPersistence *persister = [[DYFStoreUserDefaultsPersistence alloc] init];
     
     DYFStoreTransaction *transaction = [[DYFStoreTransaction alloc] init];
-    
     if (info.state == DYFStorePurchaseStateSucceeded) {
         transaction.state = DYFStoreTransactionStatePurchased;
     } else if (info.state == DYFStorePurchaseStateRestored) {
@@ -259,17 +256,6 @@ static DYFStoreManager *_instance = nil;
     [item setValue:@(error.code) forKey:@"err_code"];
     [item setValue:error.localizedDescription forKey:@"err_desc"];
     UNCallbackMessageDataToUnity(UN_MSG_CBTYPE_FAIL_TO_REFRESH_RECEIPT, item);
-    
-    /*
-    [self showAlertWithTitle:NSLocalizedStringFromTable(@"Notification", nil, @"")
-                     message:@"Fail to refresh receipt! Please check if your device can access the internet."
-           cancelButtonTitle:@"Cancel"
-                      cancel:^(UIAlertAction *action) {}
-          confirmButtonTitle:NSLocalizedStringFromTable(@"Retry", nil, @"")
-                     execute:^(UIAlertAction *action) {
-        [self refreshReceipt];
-    }];
-     */
 }
 
 - (void)verifyReceipt:(DYFStoreTransaction *)transaction {
@@ -387,7 +373,7 @@ static DYFStoreManager *_instance = nil;
         
         DYFStoreNotificationInfo *info = self.purchaseInfo;
         DYFStore *store = DYFStore.defaultStore;
-        DYFStoreKeychainPersistence *persister = store.keychainPersister;
+        DDYFStoreUserDefaultsPersistence *persister = [[DYFStoreUserDefaultsPersistence alloc] init];
         
         if (info.state == DYFStorePurchaseStateRestored) {
             
@@ -437,7 +423,7 @@ static DYFStoreManager *_instance = nil;
     dispatch_after(time, dispatch_get_main_queue(), ^{
         DYFStoreNotificationInfo *info = self.purchaseInfo;
         DYFStore *store = DYFStore.defaultStore;
-        DYFStoreKeychainPersistence *persister = store.keychainPersister;
+        DYFStoreUserDefaultsPersistence *persister = [[DYFStoreUserDefaultsPersistence alloc] init];
         
         if (info.state == DYFStorePurchaseStateRestored) {
             

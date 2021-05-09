@@ -28,6 +28,7 @@
 
 #import "DYFStore.h"
 #import "DYFStoreReceiptVerifier.h"
+#import "DYFStoreUserDefaultsPersistence.h"
 
 /** Custom method to calculate the SHA-256 hash using Common Crypto.
  */
