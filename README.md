@@ -34,7 +34,7 @@ unity_cs __ UnityIAPManager.cs
 
 ### 3、Add `DYFStoreKit` directory files.
 
-Use `pod 'DYFStoreKit'` to add the latest version of in-app purchas library for iOS, or manually add [DYFStoreKit](https://github.com/dgynfi/DYFStoreKit/tree/master/DYFStoreKit ) directory.
+Use `pod 'DYFStoreKit'` to add the latest version of in-app purchas library for iOS.
 
 ### 4、Adds the transaction observer and others.
 
@@ -61,8 +61,6 @@ As long as you add the following three pieces of code before the method return v
     
     // Sets the delegate processes the purchase which was initiated by user from the App Store.
     DYFStore.defaultStore.delegate = self;
-    
-    DYFStore.defaultStore.keychainPersister = [[DYFStoreKeychainPersistence alloc] init];
     
     return YES;
 }
