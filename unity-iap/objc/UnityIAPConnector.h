@@ -1,8 +1,8 @@
 //
 //  UnityIAPConnector
 //
-//  Created by dyf on 2020/4/16. ( https://github.com/dgynfi/Unity-iOS-InAppPurchase )
-//  Copyright © 2020 dyf. All rights reserved.
+//  Created by chenxing on 2020/4/16. ( https://github.com/chenxing640/Unity-iOS-InAppPurchase )
+//  Copyright © 2020 chenxing. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,10 +25,14 @@
 
 #import <Foundation/Foundation.h>
 
+/// Note: This function is declared in UnityInterface.h.
+//extern void UnitySendMessage(const char* obj, const char* method, const char* msg);
+
 /// Type define for mutable dictionary.
 typedef NSMutableDictionary MKVContainer;
 
-typedef NS_ENUM(int, UNMsgCallbackType) {
+typedef NS_ENUM(int, UNMsgCallbackType)
+{
     // The device is not able or allowed to make payments.
     UN_MSG_CBTYPE_CANNOT_MAKE_PAYMENTS = 1,
     // The product has been got successfully.
@@ -76,9 +80,6 @@ extern void UNCallbackMessageDataToUnity(int msgCode, id msgData);
 + (id)objectWithJson:(NSString *)json;
 
 @end
-
-/// Note: This function is declared in UnityInterface.h.
-//extern void UnitySendMessage(const char* obj, const char* method, const char* msg);
 
 @interface NSMutableDictionary (UNTypeDef)
 

@@ -1,8 +1,8 @@
 //
 //  DYFStoreManager.m
 //
-//  Created by dyf on 2014/11/4. ( https://github.com/dgynfi/Unity-iOS-InAppPurchase )
-//  Copyright © 2014 dyf. All rights reserved.
+//  Created by chenxing on 2014/11/4. ( https://github.com/chenxing640/Unity-iOS-InAppPurchase )
+//  Copyright © 2014 chenxing. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,13 +25,18 @@
 
 #import "DYFStoreManager.h"
 #import "UnityIAPConnector.h"
+#import "DYFStore.h"
+#import "DYFStoreUserDefaultsPersistence.h"
+//#import "NSObject+DYFAdd.h" //Optional
+//#import "DYFStoreReceiptVerifier.h" //Optional
 
-@interface DYFStoreManager () <DYFStoreReceiptVerifierDelegate>
+//@interface DYFStoreManager () <DYFStoreReceiptVerifierDelegate> //Optional
+@interface DYFStoreManager ()
 
 @property (nonatomic, strong) DYFStoreNotificationInfo *purchaseInfo;
 @property (nonatomic, strong) DYFStoreNotificationInfo *downloadInfo;
 
-@property (nonatomic, strong) DYFStoreReceiptVerifier *receiptVerifier;
+//@property (nonatomic, strong) DYFStoreReceiptVerifier *receiptVerifier;
 
 @end
 
@@ -40,7 +45,8 @@
 // Provides a global static variable.
 static DYFStoreManager *_instance = nil;
 
-+ (instancetype)shared {
++ (instancetype)shared
+{
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         _instance = [[self alloc] init];
@@ -48,39 +54,28 @@ static DYFStoreManager *_instance = nil;
     return _instance;
 }
 
-- (instancetype)init {
+- (instancetype)init
+{
     self = [super init];
     if (self) {
-        [self addStoreObserver];
+        [self setup];
     }
     return self;
 }
 
-- (void)addPayment:(NSString *)productIdentifier {
-    [self addPayment:productIdentifier userIdentifier:nil];
+- (void)setup
+{
+    
 }
 
-- (void)addPayment:(NSString *)productIdentifier userIdentifier:(NSString *)userIdentifier {
-    // Tips: Waiting... or Initiating purchase request...
-    [DYFStore.defaultStore purchaseProduct:productIdentifier userIdentifier:userIdentifier];
-}
-
-- (void)restoreTransactions {
-    [self restoreTransactions:nil];
-}
-
-- (void)restoreTransactions:(NSString *)userIdentifier {
-    DYFStoreLog(@"userIdentifier: %@", userIdentifier);
-    // Tips: Restoring...
-    [DYFStore.defaultStore restoreTransactions:userIdentifier];
-}
-
-- (void)addStoreObserver {
+- (void)addStoreObserver
+{
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(processPurchaseNotification:) name:DYFStorePurchasedNotification object:nil];
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(processDownloadNotification:) name:DYFStoreDownloadedNotification object:nil];
 }
 
-- (void)removeStoreObserver {
+- (void)removeStoreObserver
+{
     [NSNotificationCenter.defaultCenter removeObserver:self
                                                   name:DYFStorePurchasedNotification
                                                 object:nil];
@@ -89,27 +84,54 @@ static DYFStoreManager *_instance = nil;
                                                 object:nil];
 }
 
-- (void)processDeferredPurchase {
+- (void)addPayment:(NSString *)productIdentifier
+{
+    [self addPayment:productIdentifier userIdentifier:nil];
+}
+
+- (void)addPayment:(NSString *)productIdentifier userIdentifier:(NSString *)userIdentifier
+{
+    // Initiate purchase request.
+    //[self showLoading:@"Waiting..."];
+    [DYFStore.defaultStore purchaseProduct:productIdentifier userIdentifier:userIdentifier];
+}
+
+- (void)restoreTransactions
+{
+    [self restoreTransactions:nil];
+}
+
+- (void)restoreTransactions:(NSString *)userIdentifier
+{
+    DYFStoreLog(@"userIdentifier: %@", userIdentifier);
+    //[self showLoading:@"Restoring..."];
+    [DYFStore.defaultStore restoreTransactions:userIdentifier];
+}
+
+- (void)processDeferredPurchase
+{
     MKVContainer *item = [MKVContainer container];
     [item setValue:@"The purchase has been deferred" forKey:@"m_desc"];
     UNCallbackMessageDataToUnity(UN_MSG_CBTYPE_PURCHASE_DEFERRED, item);
 }
 
-- (void)processPurchaseInProgress {
+- (void)processPurchaseInProgress
+{
     MKVContainer *item = [MKVContainer container];
     [item setValue:@"The purchase is in progress" forKey:@"m_desc"];
     UNCallbackMessageDataToUnity(UN_MSG_CBTYPE_PURCHASE_IN_PROGRESS, item);
 }
 
-- (void)processCancelledPurchase {
+- (void)processCancelledPurchase
+{
     MKVContainer *item = [MKVContainer container];
     [item setValue:@"The purchase has been cancelled by user" forKey:@"m_desc"];
     UNCallbackMessageDataToUnity(UN_MSG_CBTYPE_PURCHASE_CANCELLED, item);
 }
 
-- (void)processFailedPurchase {
+- (void)processFailedPurchase
+{
     int msgCode = 0;
-    
     if (self.purchaseInfo.state == DYFStorePurchaseStateFailed) {
         msgCode = UN_MSG_CBTYPE_PURCHASE_FAILED;
     } else {
@@ -123,24 +145,25 @@ static DYFStoreManager *_instance = nil;
     MKVContainer *item = [MKVContainer container];
     [item setValue:@(code) forKey:@"err_code"];
     [item setValue:msg forKey:@"err_desc"];
-    
     UNCallbackMessageDataToUnity(msgCode, item);
 }
 
-- (void)processPurchaseNotification:(NSNotification *)notification {
-    
+- (void)processPurchaseNotification:(NSNotification *)notification
+{
+    //[self hideLoading];
     self.purchaseInfo = notification.object;
-    
     switch (self.purchaseInfo.state) {
         case DYFStorePurchaseStatePurchasing:
-            // Purchasing...
+            //[self showLoading:@"Purchasing..."];
             [self processPurchaseInProgress];
             break;
         case DYFStorePurchaseStateCancelled:
             // The user cancel the purchase.
+            //[self sendNotice:@"You cancel the purchase"];
             [self processCancelledPurchase];
             break;
         case DYFStorePurchaseStateFailed:
+            //[self sendNotice:[NSString stringWithFormat:@"An error occurred, code is %zi.", self.purchaseInfo.error.code]];
             [self processFailedPurchase];
             break;
         case DYFStorePurchaseStateSucceeded:
@@ -148,6 +171,7 @@ static DYFStoreManager *_instance = nil;
             [self completePayment];
             break;
         case DYFStorePurchaseStateRestoreFailed:
+            //[self sendNotice:[NSString stringWithFormat:@"An error occurred, code is %zi.", self.purchaseInfo.error.code]];
             [self processFailedPurchase];
             break;
         case DYFStorePurchaseStateDeferred:
@@ -159,10 +183,9 @@ static DYFStoreManager *_instance = nil;
     }
 }
 
-- (void)processDownloadNotification:(NSNotification *)notification {
-    
+- (void)processDownloadNotification:(NSNotification *)notification
+{
     self.downloadInfo = notification.object;
-    
     switch (self.downloadInfo.downloadState) {
         case DYFStoreDownloadStateStarted:
             DYFStoreLog(@"The download started");
@@ -184,7 +207,8 @@ static DYFStoreManager *_instance = nil;
     }
 }
 
-- (void)completePayment {
+- (void)completePayment
+{
     DYFStoreNotificationInfo *info = self.purchaseInfo;
     DYFStoreUserDefaultsPersistence *persister = [[DYFStoreUserDefaultsPersistence alloc] init];
     
@@ -198,9 +222,9 @@ static DYFStoreManager *_instance = nil;
     [self verifyReceipt:transaction];
 }
 
-- (void)storeReceipt {
+- (void)storeReceipt
+{
     DYFStoreLog();
-    
     NSURL *receiptURL = DYFStore.receiptURL;
     NSData *data = [NSData dataWithContentsOfURL:receiptURL];
     if (!data || data.length == 0) {
@@ -231,16 +255,17 @@ static DYFStoreManager *_instance = nil;
     [self verifyReceipt:transaction];
 }
 
-- (void)sendNoticeToRefreshReceipt {
-    // Tips: Refresh receipt...
+- (void)sendNoticeToRefreshReceipt
+{
     MKVContainer *item = [MKVContainer container];
     [item setValue:@"The receipt needs to be refreshed" forKey:@"m_desc"];
     UNCallbackMessageDataToUnity(UN_MSG_CBTYPE_REFRESH_RECEIPT, item);
 }
 
-- (void)refreshReceipt {
+- (void)refreshReceipt
+{
     DYFStoreLog();
-    
+    //[self showLoading:@"Refresh receipt..."];
     [DYFStore.defaultStore refreshReceiptOnSuccess:^{
         [self storeReceipt];
     } failure:^(NSError *error) {
@@ -248,17 +273,18 @@ static DYFStoreManager *_instance = nil;
     }];
 }
 
-- (void)failToRefreshReceipt:(NSError *)error {
+- (void)failToRefreshReceipt:(NSError *)error
+{
     DYFStoreLog();
-    
-    // Tips: Hides loading.
+    //[self hideLoading];
     MKVContainer *item = [MKVContainer container];
     [item setValue:@(error.code) forKey:@"err_code"];
     [item setValue:error.localizedDescription forKey:@"err_desc"];
     UNCallbackMessageDataToUnity(UN_MSG_CBTYPE_FAIL_TO_REFRESH_RECEIPT, item);
 }
 
-- (void)verifyReceipt:(DYFStoreTransaction *)transaction {
+- (void)verifyReceipt:(DYFStoreTransaction *)transaction
+{
     NSUInteger state = transaction.state;
     NSString *productId = transaction.productIdentifier;
     NSString *userId = transaction.userIdentifier;
@@ -296,17 +322,13 @@ static DYFStoreManager *_instance = nil;
     UNCallbackMessageDataToUnity(msgCode, item);
 }
 
-- (void)queryIncompletedTransactions {
-    DYFStore *store = DYFStore.defaultStore;
-    DYFStoreKeychainPersistence *persister = store.keychainPersister;
-    
+- (void)queryIncompletedTransactions
+{
+    DYFStoreUserDefaultsPersistence *persister = [[DYFStoreUserDefaultsPersistence alloc] init];
     NSArray<DYFStoreTransaction *> *arr = [persister retrieveTransactions];
     if (arr && arr.count > 0) {
-        
         NSMutableArray *mArr = [NSMutableArray array];
-        
         for (DYFStoreTransaction *t in arr) {
-            
             MKVContainer *item = [MKVContainer container];
             [item setValue:@(t.state) forKey:@"t_state"];
             [item setValue:t.productIdentifier forKey:@"p_id"];
@@ -316,10 +338,8 @@ static DYFStoreManager *_instance = nil;
             [item setValue:t.originalTransactionIdentifier ?: [NSNull null] forKey:@"orgt_id"];
             [item setValue:t.originalTransactionTimestamp ?: [NSNull null] forKey:@"orgt_ts"];
             [item setValue:t.transactionReceipt forKey:@"t_receipt"];
-            
             [mArr addObject:item];
         }
-        
         UNCallbackMessageDataToUnity(UN_MSG_CBTYPE_INCOMPLETED_TRANSACTIONS, mArr);
         return;
     }
@@ -327,192 +347,80 @@ static DYFStoreManager *_instance = nil;
     UNCallbackMessageDataToUnity(UN_MSG_CBTYPE_INCOMPLETED_TRANSACTIONS, OCEmptyString);
 }
 
-- (DYFStoreReceiptVerifier *)receiptVerifier {
-    if (!_receiptVerifier) {
-        _receiptVerifier = [[DYFStoreReceiptVerifier alloc] init];
-        _receiptVerifier.delegate = self;
-    }
-    return _receiptVerifier;
-}
+//- (DYFStoreReceiptVerifier *)receiptVerifier
+//{
+//    if (!_receiptVerifier) {
+//        _receiptVerifier = [[DYFStoreReceiptVerifier alloc] init];
+//        _receiptVerifier.delegate = self;
+//    }
+//    return _receiptVerifier;
+//}
 
 // It is better to use your own server to obtain the parameters uploaded from the client to verify the receipt from the app store server (C -> Uploaded Parameters -> S -> App Store S -> S -> Receive And Parse Data -> C).
 // If the receipts are verified by your own server, the client needs to upload these parameters, such as: "transaction identifier, bundle identifier, product identifier, user identifier, shared sceret(Subscription), receipt(Safe URL Base64), original transaction identifier(Optional), original transaction time(Optional) and the device information, etc.".
-- (void)verifyReceiptByClient:(NSData *)receiptData {
-    DYFStoreLog();
-    
-    // Tips: Hides loading.
-    // Tips: Verify receipt...
-    
-    NSData *data = receiptData ?: [NSData dataWithContentsOfURL:DYFStore.receiptURL];
-    DYFStoreLog(@"data: %@", data);
-    
-    [self.receiptVerifier verifyReceipt:data];
-    // Only used for receipts that contain auto-renewable subscriptions.
-    //[_receiptVerifier verifyReceipt:data sharedSecret:@"A43512564ACBEF687924646CAFEFBDCAEDF4155125657"];
-}
+//- (void)verifyReceiptByClient:(NSData *)receiptData
+//{
+//    DYFStoreLog();
+//    [self hideLoading];
+//    [self showLoading:@"Verify receipt..."];
+//
+//    NSData *data = receiptData ?: [NSData dataWithContentsOfURL:DYFStore.receiptURL];
+//    DYFStoreLog(@"data: %@", data);
+//
+//    [self.receiptVerifier verifyReceipt:data];
+//    // Only used for receipts that contain auto-renewable subscriptions.
+//    //[_receiptVerifier verifyReceipt:data sharedSecret:@"A43512564ACBEF687924646CAFEFBDCAEDF4155125657"];
+//}
 
-- (void)retryToVerifyReceipt {
-    DYFStoreNotificationInfo *info = self.purchaseInfo;
-    DYFStore *store = DYFStore.defaultStore;
-    DYFStoreKeychainPersistence *persister = store.keychainPersister;
-    
-    NSString *identifier = info.transactionIdentifier;
-    DYFStoreTransaction *transaction = [persister retrieveTransaction:identifier];
-    NSData *receiptData = transaction.transactionReceipt.base64DecodedData;
-    [self verifyReceiptByClient:receiptData];
-}
+//- (void)retryToVerifyReceipt
+//{
+//    DYFStoreNotificationInfo *info = self.purchaseInfo;
+//    DYFStoreUserDefaultsPersistence *persister = [[DYFStoreUserDefaultsPersistence alloc] init];
+//
+//    NSString *identifier = info.transactionIdentifier;
+//    DYFStoreTransaction *transaction = [persister retrieveTransaction:identifier];
+//    NSData *receiptData = transaction.transactionReceipt.base64DecodedData;
+//    [self verifyReceiptByClient:receiptData];
+//}
 
-- (void)verifyReceiptDidFinish:(nonnull DYFStoreReceiptVerifier *)verifier didReceiveData:(nullable NSDictionary *)data {
-    DYFStoreLog(@"data: %@", data);
-    
-    // Tips: Hides loading.
-    // Tips: You purchase the product successfully.
-    
-    dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC));
-    dispatch_after(time, dispatch_get_main_queue(), ^{
-        
-        DYFStoreNotificationInfo *info = self.purchaseInfo;
-        DYFStore *store = DYFStore.defaultStore;
-        DDYFStoreUserDefaultsPersistence *persister = [[DYFStoreUserDefaultsPersistence alloc] init];
-        
-        if (info.state == DYFStorePurchaseStateRestored) {
-            
-            SKPaymentTransaction *transaction = [store extractRestoredTransaction:info.transactionIdentifier];
-            [store finishTransaction:transaction];
-            
-        } else {
-            
-            SKPaymentTransaction *transaction = [store extractPurchasedTransaction:info.transactionIdentifier];
-            // The transaction can be finished only after the client and server adopt secure communication and data encryption and the receipt verification is passed. In this way, we can avoid refreshing orders and cracking in-app purchase. If we were unable to complete the verification, we want `StoreKit` to keep reminding us that there are still outstanding transactions.
-            [store finishTransaction:transaction];
-        }
-        
-        [persister removeTransaction:info.transactionIdentifier];
-        if (info.originalTransactionIdentifier) {
-            [persister removeTransaction:info.originalTransactionIdentifier];
-        }
-    });
-}
+//- (void)verifyReceiptDidFinish:(nonnull DYFStoreReceiptVerifier *)verifier didReceiveData:(nullable NSDictionary *)data {
+//    DYFStoreLog(@"data: %@", data);
+//    [self hideLoading];
+//    [self showTipsMessage:@"Purchase Successfully"];
+//    // Tips: Purchase Successfully!
+//}
 
-- (void)verifyReceipt:(nonnull DYFStoreReceiptVerifier *)verifier didFailWithError:(nonnull NSError *)error {
-    
-    // Prints the reason of the error.
-    DYFStoreLog(@"error: %zi, %@", error.code, error.localizedDescription);
-    
-    // Tips: Hides loading.
-    
-    // An error occurs that has nothing to do with in-app purchase. Maybe it's the internet.
-    if (error.code < 21000) {
-        
-        // After several attempts, you can cancel refreshing receipt.
-        [self showAlertWithTitle:NSLocalizedStringFromTable(@"Notification", nil, @"")
-                         message:@"Fail to verify receipt! Please check if your device can access the internet."
-               cancelButtonTitle:@"Cancel"
-                          cancel:NULL
-              confirmButtonTitle:NSLocalizedStringFromTable(@"Retry", nil, @"")
-                         execute:^(UIAlertAction *action) {
-            [self retryToVerifyReceipt];
-        }];
-        
-        return;
-    }
-    
-    // Tips: Fail to purchase the product!
-    
-    dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC));
-    dispatch_after(time, dispatch_get_main_queue(), ^{
-        DYFStoreNotificationInfo *info = self.purchaseInfo;
-        DYFStore *store = DYFStore.defaultStore;
-        DYFStoreUserDefaultsPersistence *persister = [[DYFStoreUserDefaultsPersistence alloc] init];
-        
-        if (info.state == DYFStorePurchaseStateRestored) {
-            
-            SKPaymentTransaction *transaction = [store extractRestoredTransaction:info.transactionIdentifier];
-            [store finishTransaction:transaction];
-            
-        } else {
-            
-            SKPaymentTransaction *transaction = [store extractPurchasedTransaction:info.transactionIdentifier];
-            // The transaction can be finished only after the client and server adopt secure communication and data encryption and the receipt verification is passed. In this way, we can avoid refreshing orders and cracking in-app purchase. If we were unable to complete the verification, we want `StoreKit` to keep reminding us that there are still outstanding transactions.
-            [store finishTransaction:transaction];
-        }
-        
-        [persister removeTransaction:info.transactionIdentifier];
-        if (info.originalTransactionIdentifier) {
-            [persister removeTransaction:info.originalTransactionIdentifier];
-        }
-    });
-}
+//- (void)verifyReceipt:(nonnull DYFStoreReceiptVerifier *)verifier didFailWithError:(nonnull NSError *)error {
+//    // Prints the reason of the error.
+//    DYFStoreLog(@"error: %zi, %@", error.code, error.localizedDescription);
+//    [self hideLoading];
+//
+//    // An error occurs that has nothing to do with in-app purchase. Maybe it's the internet.
+//    if (error.code < 21000) {
+//        // After several attempts, you can cancel refreshing receipt.
+//        //Fail to verify receipt!
+//        //[self retryToVerifyReceipt];
+//        return;
+//    }
+//
+//    // Tips: Fail to purchase the product!
+//}
 
-- (void)sendNotice:(NSString *)message {
-    [self showAlertWithTitle:NSLocalizedStringFromTable(@"Notification", nil, @"")
-                     message:message
-           cancelButtonTitle:nil
-                      cancel:NULL
-          confirmButtonTitle:NSLocalizedStringFromTable(@"I see", nil, @"")
-                     execute:^(UIAlertAction *action) {
-        DYFStoreLog(@"Alert action title: %@", action.title);
-    }];
-}
+//- (void)sendNotice:(NSString *)message
+//{
+//    [self showAlertWithTitle:NSLocalizedStringFromTable(@"Notification", nil, @"")
+//                     message:message
+//           cancelButtonTitle:nil
+//                      cancel:NULL
+//          confirmButtonTitle:NSLocalizedStringFromTable(@"I see", nil, @"")
+//                     execute:^(UIAlertAction *action) {
+//        DYFStoreLog(@"Alert action title: %@", action.title);
+//    }];
+//}
 
-- (void)showAlertWithTitle:(NSString *)title
-                   message:(NSString *)message
-         cancelButtonTitle:(NSString *)cancelButtonTitle
-                    cancel:(void (^)(UIAlertAction *))cancelHandler
-        confirmButtonTitle:(NSString *)confirmButtonTitle
-                   execute:(void (^)(UIAlertAction *))executableHandler {
+- (void)dealloc
+{
     
-    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
-    
-    if (cancelButtonTitle && cancelButtonTitle.length > 0) {
-        UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:cancelButtonTitle style:UIAlertActionStyleCancel handler:cancelHandler];
-        [alertController addAction:cancelAction];
-    }
-    
-    if (confirmButtonTitle && confirmButtonTitle.length > 0) {
-        UIAlertAction *confirmAction = [UIAlertAction actionWithTitle:confirmButtonTitle style:UIAlertActionStyleDefault handler:executableHandler];
-        [alertController addAction:confirmAction];
-    }
-    
-    [self.un_currentViewController presentViewController:alertController
-                                                animated:YES
-                                              completion:NULL];
-}
-
-- (UIViewController *)un_currentViewController {
-    
-    UIApplication *sharedApp = UIApplication.sharedApplication;
-    
-    UIWindow *window = sharedApp.keyWindow ?: sharedApp.windows[0];
-    UIViewController *viewController = window.rootViewController;
-    
-    return [self un_findCurrentViewControllerFrom:viewController];
-}
-
-- (UIViewController *)un_findCurrentViewControllerFrom:(UIViewController *)viewController {
-    
-    UIViewController *vc = viewController;
-    
-    while (1) {
-        if (vc.presentedViewController) {
-            vc = vc.presentedViewController;
-        } else if ([vc isKindOfClass:UITabBarController.class]) {
-            vc = ((UITabBarController *)vc).selectedViewController;
-        } else if ([vc isKindOfClass:UINavigationController.class]) {
-            vc = ((UINavigationController *)vc).visibleViewController;
-        } else {
-            if (vc.childViewControllers.count > 0) {
-                vc = vc.childViewControllers.lastObject;
-            }
-            break;
-        }
-    }
-    
-    return vc;
-}
-
-- (void)dealloc {
-    [self removeStoreObserver];
 }
 
 @end

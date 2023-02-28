@@ -1,8 +1,8 @@
 //
 //  UnityIAPConnector.mm
 //
-//  Created by dyf on 2020/4/16. ( https://github.com/dgynfi/Unity-iOS-InAppPurchase )
-//  Copyright © 2020 dyf. All rights reserved.
+//  Created by chenxing on 2020/4/16. ( https://github.com/chenxing640/Unity-iOS-InAppPurchase )
+//  Copyright © 2020 chenxing. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +23,20 @@
 // THE SOFTWARE.
 //
 
-#import "UnityIAPConnector.h"
 #import "DYFStoreManager.h"
+#import "UnityIAPConnector.h"
+#import "DYFStore.h"
+#import "DYFStoreUserDefaultsPersistence.h"
+#import "UnityInterface.h"
 
 /// This is used to store the name of the `GameObject` object.
 static NSString *s_callbackGameObject;
 /// This is used to store a function name of the `GameObject` object.
 static NSString *s_callbackFunc;
 
-
 /// This function (UnitySendMessage) is declared in UnityInterface.h.
+//void UnitySendMessage(const char* obj, const char* method, const char* msg) {} //For testing
+
 #if !defined(__UN_SEND_MSG)
 #define __UN_SEND_MSG(s_msg) UnitySendMessage([s_callbackGameObject UTF8String], [s_callbackFunc UTF8String], [s_msg UTF8String])
 #endif
@@ -46,8 +50,8 @@ static NSString *s_callbackFunc;
 NSString *const OCEmptyString = @"";
 
 /// This function is used to callback message data to unity.
-void UNCallbackMessageDataToUnity(int msgCode, id msgData) {
-    
+void UNCallbackMessageDataToUnity(int msgCode, id msgData)
+{
     MKVContainer *dataBody = [MKVContainer container];
     [dataBody setValue:@(msgCode) forKey:@"msg_code"];
     [dataBody setValue:msgData forKey:@"msg_data"];
@@ -57,15 +61,15 @@ void UNCallbackMessageDataToUnity(int msgCode, id msgData) {
 }
 
 /// Returns the localized price of a given product.
-static NSString *UNLocalizedPrice(SKProduct *product) {
+static NSString *UNLocalizedPrice(SKProduct *product)
+{
     return [DYFStore.defaultStore localizedPriceOfProduct:product];
 }
-
 
 #if defined(_cplusplus)
 extern "C"{
 #endif
-
+    
     /// Initializes message callback for Unity.
     /// @param callbackGameObject The gameObject name comes from Unity.
     /// @param callbackFunc The function name comes from Unity.
@@ -75,9 +79,9 @@ extern "C"{
         NSCAssert(callbackFunc != NULL, @"The callback function is null");
         s_callbackGameObject = __OBJC_STRING(callbackGameObject);
         s_callbackFunc = __OBJC_STRING(callbackFunc);
-#if DEBUG
-        NSLog(@"%s s_callbackGameObject: %@, s_callbackFunc: %@", __func__, s_callbackGameObject, s_callbackFunc);
-#endif
+        #if DEBUG
+        NSLog(@"[::] callbackGameObject: %@, callbackFunc: %@", s_callbackGameObject, s_callbackFunc);
+        #endif
     }
     
     /// Step 1: Requests localized information about a product from the Apple App Store.
@@ -85,102 +89,77 @@ extern "C"{
     void DYFRetrieveProductFromAppStore(const char* productId)
     {
         if (![DYFStore canMakePayments]) {
-            
             MKVContainer *item = [MKVContainer container];
             [item setValue:@"This device is not able or allowed to make payments!" forKey:@"err_desc"];
             UNCallbackMessageDataToUnity(UN_MSG_CBTYPE_CANNOT_MAKE_PAYMENTS, item);
-            
             return;
         }
         
         NSString *productIdentifier = __OBJC_STRING(productId);
-        
         [DYFStore.defaultStore requestProductWithIdentifier:productIdentifier success:^(NSArray *products, NSArray *invalidIdentifiers) {
-            
             if (products.count == 1) {
-                
                 NSString *productId = ((SKProduct *)products[0]).productIdentifier;
                 MKVContainer *item = [MKVContainer container];
                 [item setValue:productId forKey:@"p_id"];
-                
                 UNCallbackMessageDataToUnity(UN_MSG_CBTYPE_GET_PRODUCT_SUCCESSFULLY, item);
-                
             } else {
-                
                 // There is no this product for sale!
                 MKVContainer *item = [MKVContainer container];
                 [item setValue:@"There is no this product for sale!" forKey:@"err_desc"];
                 UNCallbackMessageDataToUnity(UN_MSG_CBTYPE_NO_PRODUCT_FOR_SALE, item);
             }
-            
         } failure:^(NSError *error) {
-            
             NSString *value = error.userInfo[NSLocalizedDescriptionKey];
             NSString *msg = value ?: error.localizedDescription;
             
             MKVContainer *item = [MKVContainer container];
             [item setValue:@(error.code) forKey:@"err_code"];
             [item setValue:msg forKey:@"err_desc"];
-            
             UNCallbackMessageDataToUnity(UN_MSG_CBTYPE_FAIL_TO_GET_PRODUCT, item);
         }];
     }
-
+    
     /// Step 1: Requests localized information about a set of products from the Apple App Store.
     /// Step 2: After retrieving the localized product list, then display store UI.
     /// Step 3: Adds payment of the product with the given product identifier.
     void DYFRetrieveProductsFromAppStore(const char* productIds)
     {
         if (![DYFStore canMakePayments]) {
-            
             MKVContainer *item = [MKVContainer container];
             [item setValue:@"This device is not able or allowed to make payments!" forKey:@"err_desc"];
             UNCallbackMessageDataToUnity(UN_MSG_CBTYPE_CANNOT_MAKE_PAYMENTS, item);
-            
             return;
         }
         
         NSString *jsonForProductIds = __OBJC_STRING(productIds);
         NSArray *productIdentifiers = [UnityIAPConnector objectWithJson:jsonForProductIds];
-        
         [DYFStore.defaultStore requestProductWithIdentifiers:productIdentifiers success:^(NSArray *products, NSArray *invalidIdentifiers) {
-            
             if (products.count > 0) {
-                
                 NSMutableArray *itemArr = [NSMutableArray array];
-                
                 for (SKProduct *p in products) {
-                    
                     MKVContainer *item = [MKVContainer container];
                     [item setValue:p.productIdentifier forKey:@"p_id"];
                     [item setValue:p.localizedTitle forKey:@"p_title"];
                     [item setValue:p.price.stringValue forKey:@"p_price"];
                     [item setValue:UNLocalizedPrice(p) forKey:@"p_localized_price"];
                     [item setValue:p.localizedDescription forKey:@"p_localized_desc"];
-                    
                     [itemArr addObject:item];
                 }
-                
                 UNCallbackMessageDataToUnity(UN_MSG_CBTYPE_GET_PRODUCTS_SUCCESSFULLY, itemArr);
-                
             } else if (products.count == 0 && invalidIdentifiers.count > 0) {
-                
                 // Please check the product information you set up.
                 MKVContainer *item = [MKVContainer container];
                 [item setValue:@"There are no products for sale!" forKey:@"err_desc"];
                 [item setValue:invalidIdentifiers forKey:@"invalid_ids"];
                 UNCallbackMessageDataToUnity(UN_MSG_CBTYPE_NO_PRODUCTS_FOR_SALE, item);
             }
-            
         } failure:^(NSError *error) {
-            
             NSString *value = error.userInfo[NSLocalizedDescriptionKey];
             NSString *msg = value ?: error.localizedDescription;
             
             MKVContainer *item = [MKVContainer container];
             [item setValue:@(error.code) forKey:@"err_code"];
             [item setValue:msg forKey:@"err_desc"];
-            
             UNCallbackMessageDataToUnity(UN_MSG_CBTYPE_FAIL_TO_GET_PRODUCTS, item);
         }];
     }
@@ -192,7 +171,7 @@ extern "C"{
         NSString *userIdentifier = __OBJC_STRING(userId);
         [DYFStoreManager.shared addPayment:productIdentifier userIdentifier:userIdentifier];
     }
-
+    
     /// Restores previously completed purchases with an opaque identifier for the user’s account.
     void DYFRestoreTransactions(const char* userId)
     {
@@ -205,90 +184,85 @@ extern "C"{
     {
         [DYFStoreManager.shared refreshReceipt];
     }
-
+    
     /// Completes a pending transaction.
-    void DYFFinishTransaction(const char* transactionId)
+    void DYFFinishTransaction(const char* transactionId, const char* originalTransactionId)
     {
         NSString *transactionIdentifier = __OBJC_STRING(transactionId);
+        NSString *orgTransactionIdentifier = __OBJC_STRING(originalTransactionId);
         
         DYFStore *store = DYFStore.defaultStore;
         SKPaymentTransaction *pt = [store extractPurchasedTransaction:transactionIdentifier];
-        
         if (pt) {
-            
             [DYFStore.defaultStore finishTransaction:pt];
-            
         } else {
-            
             SKPaymentTransaction *rt = [store extractRestoredTransaction:transactionIdentifier];
             [DYFStore.defaultStore finishTransaction:rt];
         }
-        
-        DYFStoreKeychainPersistence *persister = store.keychainPersister;
+        DYFStoreUserDefaultsPersistence *persister = [[DYFStoreUserDefaultsPersistence alloc] init];
         [persister removeTransaction:transactionIdentifier];
+        
+        if (orgTransactionIdentifier) {
+            [persister removeTransaction:orgTransactionIdentifier];
+        }
     }
-
+    
+    /// Completes a pending transaction.
+    void DYFFinishTransaction_(const char* transactionId)
+    {
+        DYFFinishTransaction(transactionId, "");
+    }
+    
     /// Queries those incompleted transactions from keychain.
     void DYFQueryIncompletedTransactions()
     {
         [DYFStoreManager.shared queryIncompletedTransactions];
     }
-
+    
 #if defined(_cplusplus)
 }
 #endif
 
-
 @implementation UnityIAPConnector
 
-+ (NSString *)jsonWithObject:(id)object {
-    
++ (NSString *)jsonWithObject:(id)object
+{
     if ([NSJSONSerialization isValidJSONObject:object]) {
-        
         NSError *error;
         NSData *data = [NSJSONSerialization dataWithJSONObject:object options:kNilOptions error:&error];
         if (!error) {
             return [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         }
-        
-#if DEBUG
-        NSLog(@"%s: %@", __FUNCTION__, error.description);
-#endif
+        #if DEBUG
+        NSLog(@"[IAPConnector] error: %@", error.description);
+        #endif
     }
     
     return nil;
 }
 
-+ (id)objectWithJson:(NSString *)json {
-    
++ (id)objectWithJson:(NSString *)json
+{
     if (json && json.length > 0) {
-        
         NSData *data = [json dataUsingEncoding:NSUTF8StringEncoding];
-        
         NSError *error;
         id obj = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
         if (!error) {
             return obj;
         }
-        
-#if DEBUG
-        NSLog(@"%s: %@", __FUNCTION__, error.description);
-#endif
+        #if DEBUG
+        NSLog(@"[IAPConnector] error: %@", error.description);
+        #endif
     }
-    
     return nil;
 }
 
 @end
 
-
-/// Note: This function is declared in UnityInterface.h.
-//void UnitySendMessage(const char* obj, const char* method, const char* msg) {}
-
-
 @implementation NSMutableDictionary (UNTypeDef)
 
-+ (instancetype)container {
++ (instancetype)container
+{
     return [NSMutableDictionary dictionary];
 }
 
