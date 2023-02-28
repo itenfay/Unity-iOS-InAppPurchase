@@ -8,31 +8,45 @@ Unity实现苹果iOS的应用内购买。
 ## QQ群 (ID:614799921)
 
 <div align=left>
-&emsp; <img src="https://github.com/dgynfi/DYFStoreKit/raw/master/images/g614799921.jpg" width="30%" />
+&emsp; <img src="https://github.com/chenxing640/DYFStoreKit/raw/master/images/g614799921.jpg" width="30%" />
 </div>
 
 
 ## 使用
 
+`unity-iap`的目录结构如下：
+
+- **Objective-C**
+
+| Dir                        | file               |
+| :------------------------: | :----------------: |
+| objc(StoreManager External)| UnityIAPConnector.h/.mm |
+| StoreManager               | DYFStoreManager.h/.mm |
+| External(Optional)         | DYFLoadingView.h/.m DYFIndefiniteAnimatedSpinner.h/.m NSObject+DYFAdd.h/.m UIView+DYFAdd.h/.m |
+
+- **Unity**
+
+|  Dir               | file               |
+| :----------------: | :----------------: |
+| unity              | UnityIAPManager.cs |
+
+**Note: Unity需要在适当的时候显示/隐藏加载面板或显示提示消息。**
+
 ### 1、添加 Objective-C 所需要的文件
 
-在 Unity 工程中添加 Objective-C 所需要的文件，其目录结构如下：
-
-objc __ store_manager __ DYFStoreManager.h <br>
-| &emsp;&emsp;&emsp;&emsp;&emsp; |__ DYFStoreManager.mm <br>
-|                        <br>
-|__ UnityIAPConnector.h  <br>
-|__ UnityIAPConnector.mm <br>
+在 Unity 工程中添加 Objective-C 所需要的文件。
 
 ### 2、添加 cs 脚本
 
 在 Unity 工程中添加 iOS 内购实现所需要的 cs 脚本。
 
-unity_cs __ UnityIAPManager.cs
-
 ### 3、添加 DYFStoreKit 目录文件
 
 使用 `pod 'DYFStoreKit'` 添加最新版本的 iOS 内购库。
+
+或者
+
+克隆 `DYFStoreKit`（`git clone https://github.com/chenxing640/DYFStoreKit.git`）到本地目录。
 
 ### 4、添加交易监听和其他
 
@@ -42,16 +56,25 @@ unity_cs __ UnityIAPManager.cs
 
 ```
 @interface UnityAppController() <DYFStoreAppStorePaymentDelegate>
+
 @end
 ```
 
 - 添加观察者、设置代理和数据持久
 
-只要在方法返回值前添加以下三段代码，其他代码不要改变。
+只要在方法返回值前添加以下一段代码，其他代码不要改变。
 
 ```
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-        
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions 
+{
+    [self initIAPSDK];
+    return YES;
+}
+
+- (void)initIAPSDK
+{
+    [DYFStoreManager.shared addStoreObserver];
+    
     // Adds an observer that responds to updated transactions to the payment queue.
     // If an application quits when transactions are still being processed, those transactions are not lost. The next time the application launches, the payment queue will resume processing the transactions. Your application should always expect to be notified of completed transactions.
     // If more than one transaction observer is attached to the payment queue, no guarantees are made as to the order they will be called in. It is recommended that you use a single observer to process and finish the transaction.
@@ -59,8 +82,6 @@ unity_cs __ UnityIAPManager.cs
     
     // Sets the delegate processes the purchase which was initiated by user from the App Store.
     DYFStore.defaultStore.delegate = self;
-    
-    return YES;
 }
 ```
 
@@ -68,21 +89,20 @@ unity_cs __ UnityIAPManager.cs
 
 ```
 // Processes the purchase which was initiated by user from the App Store.
-- (void)didReceiveAppStorePurchaseRequest:(SKPaymentQueue *)queue payment:(SKPayment *)payment forProduct:(SKProduct *)product {
-    
+- (void)didReceiveAppStorePurchaseRequest:(SKPaymentQueue *)queue payment:(SKPayment *)payment forProduct:(SKProduct *)product
+{
     if (![DYFStore canMakePayments]) {
         // Tips: Your device is not able or allowed to make payments!
         return;
     }
     
-    // Get account id from your own user system.
-    //NSString *user_id = @"u144854433234";
+    // Get account name from your own user system.
+    NSString *accountName = @"Handsome Jon";
+    // This algorithm is negotiated with server developer.
+    NSString *userIdentifier = DYFStore_supplySHA256(accountName);
+    DYFStoreLog(@"userIdentifier: %@", userIdentifier);
     
-    // You can choose to hash user_id.
-    //NSString *userIdentifier = DYF_SHA256_HashValue(user_id);
-    //DYFStoreLog(@"userIdentifier: %@", userIdentifier);
-    
-    [DYFStoreManager.shared addPayment:product.productIdentifier userIdentifier:nil];
+    [DYFStoreManager.shared addPayment:product.productIdentifier userIdentifier:userIdentifier];
 }
 ```
 
@@ -94,9 +114,9 @@ unity_cs __ UnityIAPManager.cs
 public void initUnityMsgCallback(string gameObject, string func)
 {
     LogManager.Log("initUnityMsgCallback=" + gameObject + "," + func);
-#if !UNITY_EDITOR && UNITY_IOS
+    #if !UNITY_EDITOR && UNITY_IOS
     DYFInitUnityMsgCallback(gameObject, func);
-#endif
+    #endif
 }
 ```
 
@@ -109,10 +129,10 @@ public void retrieveProduct(string productId)
 {
     if (Application.platform != RuntimePlatform.OSXEditor) {
         LogManager.Log("retrieveProduct=" + productId);
-#if !UNITY_EDITOR && UNITY_IOS
+        #if !UNITY_EDITOR && UNITY_IOS
         // Tips: show loading panel.
         DYFRetrieveProductFromAppStore(productId);
-#endif
+        #endif
     }
 }
 ```
@@ -123,12 +143,10 @@ public void retrieveProduct(string productId)
 case (int)CallbackType.Action_GetProductSuccessfully:
 {
     LogManager.Log ("CallbackType.Action_GetProductSuccessfully");
-
     string productId = (string)json["msg_data"]["p_id"];
     // You get this from your user system when you need it.
     string userId = null;
     addPayment(productId, userId);
-
     break;
 }
 ````
@@ -161,10 +179,10 @@ public void retrieveProducts()
     if (Application.platform != RuntimePlatform.OSXEditor) {
         string jsonOfProductIds = getJsonOfProductIds()
         LogManager.Log("retrieveProducts=" + jsonOfProductIds);
-#if !UNITY_EDITOR && UNITY_IOS
+        #if !UNITY_EDITOR && UNITY_IOS
         // Tips: show loading panel.
         DYFRetrieveProductsFromAppStore(jsonOfProductIds);
-#endif
+        #endif
     }
 }
 ```
@@ -176,10 +194,8 @@ public void retrieveProducts()
 case (int)CallbackType.Action_GetProductsSuccessfully:
 {
     LogManager.Log ("CallbackType.Action_GetProductsSuccessfully");
-
     JArray arr = JArray.Parse(json["msg_data"].ToString());
     parseProductList(arr);
-
     break;
 }
 
@@ -187,9 +203,7 @@ private void parseProductList(JArray jarr)
 {
     try {
         LogManager.Log ("parseProductList... jarr: " + jarr.ToString());
-
         for(int i = 0; i < jarr.Count; i++) {
-
             JObject jo = JObject.Parse(jarr[i].ToString());
             string productId = jo["p_id"].ToString();
             string title = jo["p_title"].ToString();
@@ -208,7 +222,8 @@ private void parseProductList(JArray jarr)
     }
 }
 
-private void displayStorePanel() {
+private void displayStorePanel() 
+{
     // After getting the products, then the store panel is displayed.
 }
 ```
@@ -220,10 +235,10 @@ public void addPayment(string productId, string userId)
 {
     if (Application.platform != RuntimePlatform.OSXEditor) {
         LogManager.Log("addPayment=" + productId + "," + userId);
-#if !UNITY_EDITOR && UNITY_IOS
+        #if !UNITY_EDITOR && UNITY_IOS
         // Tips: show loading panel.
         DYFAddPayment(productId, userId);
-#endif
+        #endif
     }
 }
 ```
@@ -235,10 +250,10 @@ public void restoreTransactions(string userId)
 {
     if (Application.platform != RuntimePlatform.OSXEditor) {
         LogManager.Log("DYFRestoreTransactions=", userId);
-#if !UNITY_EDITOR && UNITY_IOS    
+        #if !UNITY_EDITOR && UNITY_IOS    
         // Tips: show loading panel.
         DYFRestoreTransactions(userId);
-#endif
+        #endif
         LogManager.Log("Store start restoring completed transactions...", LogType.Normal);
     }
 }
@@ -252,12 +267,10 @@ public void restoreTransactions(string userId)
 case(int)CallbackType.Action_RefreshReceipt: 
 {
     LogManager.Log ("CallbackType.Action_RefreshReceipt");
-
     // Tips: The receipt needs to be refreshed.
     string desc = (string)json["msg_data"]["m_desc"];
     LogManager.Log("err_desc=", desc);
     refreshReceipt()
-
     break;
 }
 ```
@@ -266,10 +279,10 @@ case(int)CallbackType.Action_RefreshReceipt:
 public void refreshReceipt()
 {
     if (Application.platform != RuntimePlatform.OSXEditor) {
-#if !UNITY_EDITOR && UNITY_IOS    
+        #if !UNITY_EDITOR && UNITY_IOS    
         // Tips: show loading panel.
         DYFRefreshReceipt();
-#endif
+        #endif
         LogManager.Log("Store start refreshing receipt...", LogType.Normal);
     }
 }
@@ -282,7 +295,6 @@ private void verifyReceipt(JObject jo)
 {
     try {
         LogManager.Log ("verifyReceipt... jo: " + jo.ToString());
-
         int state = int.Parse(jo["t_state"].ToString);
         string productId = jo["p_id"].ToString();
         string userId = jo["u_id"].ToString();
@@ -291,10 +303,8 @@ private void verifyReceipt(JObject jo)
         string orgTransId = jo["orgt_id"].ToString();
         string orgTransTimestamp = jo["orgt_ts"].ToString();
         string base64EncodedReceipt = jo["t_receipt"].ToString();
-
         // You can also add the bundle identifier.
         requestToVerifyReceipt(productId, transId, base64EncodedReceipt, userId, transTimestamp, orgTransId, orgTransTimestamp);
-
     } catch (System.Exception e) {
         LogManager.Log (e.ToString (), LogType.Fatal);
     }
@@ -311,8 +321,8 @@ private void requestToVerifyReceipt(string productId, string transId, string bas
     // finishTransaction(transactionId); finishTransaction(orgTransactionId); 
 
     // Recommended reference links:
-    // https://dgynfi.github.io/2016/10/16/in-app-purchase-complete-programming-guide-for-iOS/
-    // https://dgynfi.github.io/2016/10/12/how-to-easily-complete-in-app-purchase-configuration-for-iOS/
+    // https://chenxing640.github.io/2016/10/16/in-app-purchase-complete-programming-guide-for-iOS/
+    // https://chenxing640.github.io/2016/10/12/how-to-easily-complete-in-app-purchase-configuration-for-iOS/
     // https://www.jianshu.com/p/de030cd6e4a3
     // https://www.jianshu.com/p/1875e0c7ac5d
     
@@ -323,13 +333,23 @@ private void requestToVerifyReceipt(string productId, string transId, string bas
 最后，在票据验证通过后，你要完成相应的交易。
 
 ```
-public void finishTransaction(string transactionId)
+public void finishTransaction(string transactionId, string originalTransactionId)
 {
     if (Application.platform != RuntimePlatform.OSXEditor) {
         LogManager.Log("finishTransaction", LogType.Normal);
-#if !UNITY_EDITOR && UNITY_IOS                
-        DYFFinishTransaction(transactionId);
-#endif
+        #if !UNITY_EDITOR && UNITY_IOS                
+        DYFFinishTransaction(transactionId, originalTransactionId);
+        #endif
+    }
+}
+
+public void finishTransaction_(string transactionId)
+{
+    if (Application.platform != RuntimePlatform.OSXEditor) {
+        LogManager.Log("finishTransaction", LogType.Normal);
+        #if !UNITY_EDITOR && UNITY_IOS                
+        DYFFinishTransaction_(transactionId);
+        #endif
     }
 }
 ```
@@ -343,9 +363,9 @@ public void queryIncompletedTransactions()
 {
     if (Application.platform != RuntimePlatform.OSXEditor) {
         LogManager.Log("queryIncompletedTransactions", LogType.Normal);
-#if !UNITY_EDITOR && UNITY_IOS                
+        #if !UNITY_EDITOR && UNITY_IOS                
         DYFQueryIncompletedTransactions();
-#endif
+        #endif
     }
 }
 ```
@@ -353,8 +373,8 @@ public void queryIncompletedTransactions()
 
 ## 推荐参考链接
 
-- [https://dgynfi.github.io/2016/10/16/in-app-purchase-complete-programming-guide-for-iOS/](https://dgynfi.github.io/2016/10/16/in-app-purchase-complete-programming-guide-for-iOS/)
-- [https://dgynfi.github.io/2016/10/12/how-to-easily-complete-in-app-purchase-configuration-for-iOS/](https://dgynfi.github.io/2016/10/12/how-to-easily-complete-in-app-purchase-configuration-for-iOS/)
+- [in-app-purchase-complete-programming-guide-for-iOS](https://chenxing640.github.io/2016/10/16/in-app-purchase-complete-programming-guide-for-iOS/)
+- [how-to-easily-complete-in-app-purchase-configuration-for-iOS](https://chenxing640.github.io/2016/10/12/how-to-easily-complete-in-app-purchase-configuration-for-iOS/)
 - [https://www.jianshu.com/p/de030cd6e4a3](https://www.jianshu.com/p/de030cd6e4a3)
 - [https://www.jianshu.com/p/1875e0c7ac5d](https://www.jianshu.com/p/1875e0c7ac5d)
 
@@ -366,4 +386,4 @@ public void queryIncompletedTransactions()
 
 ## 欢迎反馈
 
-如果你注意到任何问题，被卡住或只是想聊天，请随意创建一个问题。我很乐意帮助你。
+如果你注意到任何问题被卡住，请创建一个问题。我很乐意帮助你。
