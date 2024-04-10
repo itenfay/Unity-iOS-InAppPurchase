@@ -32,7 +32,7 @@ The directory structure of `unity-iap` is as follows:
 | :----------------: | :----------------: |
 | unity              | UnityIAPManager.cs |
 
-**Note: Unity needs to show/hide loading panel or show prompt message at the right time.**
+> **Note: Unity needs to show/hide loading panel or show prompt message at the right time.**
 
 ### 1. Add the required files for Objective-C.
 
