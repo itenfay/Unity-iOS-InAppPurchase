@@ -1,13 +1,13 @@
 ﻿/// 
 /// File Name: UnityIAPManager.cs
 /// 
-/// Author: chenxing
+/// Author: Tenfay
 ///
 /// Brief:
 ///   Unity implements Apple's in-app purchases for iOS.
 ///
 /// Log:
-///   1. created, 2020-04-16, chenxing.
+///   1. created, 2020-04-16, Tenfay.
 ///
 
 using UnityEngine;
@@ -486,8 +486,8 @@ public class UnityIAPManager : com.dl.core.SingletonObject<UnityIAPManager>
 		// finishTransaction(transactionId); finishTransaction(orgTransactionId); 
 
 		// Recommended reference links:
-		// https://chenxing640.github.io/2016/10/16/in-app-purchase-complete-programming-guide-for-iOS/
-		// https://chenxing640.github.io/2016/10/12/how-to-easily-complete-in-app-purchase-configuration-for-iOS/
+		// https://itenfay.github.io/2016/10/16/in-app-purchase-complete-programming-guide-for-iOS/
+		// https://itenfay.github.io/2016/10/12/how-to-easily-complete-in-app-purchase-configuration-for-iOS/
 		// https://www.jianshu.com/p/de030cd6e4a3
 		// https://www.jianshu.com/p/1875e0c7ac5d
 		

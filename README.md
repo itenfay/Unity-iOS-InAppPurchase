@@ -1,22 +1,23 @@
-English Vision | [中文版](README-zh.md)
+**中文版** | [English Version](README-en.md)
+
 
 ## Unity-iOS-InAppPurchase
 
-Unity implements Apple's in-app purchases for iOS.
+Unity实现苹果iOS的应用内购买。
 
 [![License MIT](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](LICENSE)&nbsp;
 
 
-## Group (ID:614799921)
+## QQ群 (ID:614799921)
 
 <div align=left>
-&emsp; <img src="https://github.com/chenxing640/DYFStoreKit/raw/master/images/g614799921.jpg" width="30%" />
+&emsp; <img src="https://github.com/itenfay/DYFStoreKit/raw/master/images/g614799921.jpg" width="30%" />
 </div>
 
 
-## Usage
+## 使用
 
-The directory structure of `unity-iap` is as follows:
+`unity-iap`的目录结构如下：
 
 - **Objective-C**
 
@@ -32,29 +33,29 @@ The directory structure of `unity-iap` is as follows:
 | :----------------: | :----------------: |
 | unity              | UnityIAPManager.cs |
 
-> **Note: Unity needs to show/hide loading panel or show prompt message at the right time.**
+> **Note: Unity需要在适当的时候显示/隐藏加载面板或显示提示消息。**
 
-### 1. Add the required files for Objective-C.
+### 1、添加 Objective-C 所需要的文件
 
-You need to add the required files for Objective-C in Unity project 
+在 Unity 工程中添加 Objective-C 所需要的文件。
 
-### 2. Add cs script.
+### 2、添加 cs 脚本
 
-You need to add the required cs script of in-app purchase for iOS in Unity project.
+在 Unity 工程中添加 iOS 内购实现所需要的 cs 脚本。
 
-### 3、Add `DYFStoreKit` directory files.
+### 3、添加 DYFStoreKit 目录文件
 
-Use `pod 'DYFStoreKit'` to add the latest version of in-app purchas library for iOS.
+使用 `pod 'DYFStoreKit'` 添加最新版本的 iOS 内购库。
 
-Or
+或者
 
-Clone `DYFStoreKit` (git clone https://github.com/chenxing640/DYFStoreKit.git) to the local directory.
+克隆 `DYFStoreKit`（`git clone https://github.com/itenfay/DYFStoreKit.git`）到本地目录。
 
-### 4、Adds the transaction observer and others.
+### 4、添加交易监听和其他
 
-Adds header file `#import "DYFStoreManager.h"` in UnityAppController.mm.
+在 UnityAppController.mm 中添加头文件 `#import "DYFStoreManager.h"`
 
-- Comply with the agreement.
+- 遵守协议
 
 ```
 @interface UnityAppController() <DYFStoreAppStorePaymentDelegate>
@@ -62,9 +63,9 @@ Adds header file `#import "DYFStoreManager.h"` in UnityAppController.mm.
 @end
 ```
 
-- Adds the observer, set up the delegate and data persistence.
+- 添加观察者、设置代理和数据持久
 
-As long as you add the following a piece of code before the method return value, the rest of the code does not change.
+只要在方法返回值前添加以下一段代码，其他代码不要改变。
 
 ```
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions 
@@ -87,7 +88,7 @@ As long as you add the following a piece of code before the method return value,
 }
 ```
 
-- You can process the purchase which was initiated by user from the App Store. (iOS 11.0+)
+- 你可以处理用户从App Store发起的购买 (iOS 11.0+)
 
 ```
 // Processes the purchase which was initiated by user from the App Store.
@@ -108,9 +109,9 @@ As long as you add the following a piece of code before the method return value,
 }
 ```
 
-### 5. Points for attention.
+### 5、注意事项
 
-- Initializes the unity callback game object and function.
+- 初始化 Unity 回调对象和函数
 
 ```
 public void initUnityMsgCallback(string gameObject, string func)
@@ -122,9 +123,9 @@ public void initUnityMsgCallback(string gameObject, string func)
 }
 ```
 
-- The purchase of a single product.
+- 单个商品购买
 
-If your app contains purchased UI interface and product display information, users only need to choose to purchase. The disadvantage is that the program has to do local price matching.
+如果你的应用含有购买的 UI 界面和商品展示信息，用户就只需要选择购买。 缺点就是程序要做当地价格匹配。
 
 ```
 public void retrieveProduct(string productId)
@@ -139,7 +140,7 @@ public void retrieveProduct(string productId)
 }
 ```
 
-When the program gets a successful callback, you can parse the data and add the payment. In other cases, the program should prompt the user with a pop-up box.
+当程序得到成功的回调时，就可以解析数据进行添加付款了。其他情况程序要对用户弹框提示。
 
 ```
 case (int)CallbackType.Action_GetProductSuccessfully:
@@ -153,9 +154,9 @@ case (int)CallbackType.Action_GetProductSuccessfully:
 }
 ````
 
-- Requests multiple products and display the purchased UI interface.
+- 请求多个商品并展示购买的 UI 界面
 
-You can request multiple products at a time and get the localized information of the product through the tool.
+一次请求多个商品，通过工具获得商品的本地化信息。
 
 ```
 // You can either return the value or get a set of product identifiers from your server.
@@ -189,7 +190,8 @@ public void retrieveProducts()
 }
 ```
 
-When the program gets a successful callback, it can parse the data to display the UI interface of the purchase. In other cases, the program should prompt the user with a pop-up box.
+当程序得到成功的回调时，就可以解析数据进行展示购买的 UI 界面。其他情况程序要对用户弹框提示。
+
 
 ```
 case (int)CallbackType.Action_GetProductsSuccessfully:
@@ -229,7 +231,7 @@ private void displayStorePanel()
 }
 ```
 
-The user chooses to purchase product, and the user ID can be set as needed.
+用户选择购买商品，用户 id 可根据需要进行设置。
 
 ```
 public void addPayment(string productId, string userId)
@@ -244,7 +246,7 @@ public void addPayment(string productId, string userId)
 }
 ```
 
-- Restores the completed transactions, user ID is optional.
+- 恢复已经完成的交易，用户 id 可选
 
 ```
 public void restoreTransactions(string userId)
@@ -260,9 +262,9 @@ public void restoreTransactions(string userId)
 }
 ```
 
-- Refreshes receipt.
+- 刷新票据
 
-If the receipt is invalid or missing, refresh the App Store's receipt.
+如果票据无效或丢失，就要刷新App Store票据。
 
 ```
 case(int)CallbackType.Action_RefreshReceipt: 
@@ -289,7 +291,7 @@ public void refreshReceipt()
 }
 ```
 
-- Receipt verification.
+-  票据验证
 
 ```
 private void verifyReceipt(JObject jo)
@@ -322,8 +324,8 @@ private void requestToVerifyReceipt(string productId, string transId, string bas
     // finishTransaction(transactionId); finishTransaction(orgTransactionId); 
 
     // Recommended reference links:
-    // https://chenxing640.github.io/2016/10/16/in-app-purchase-complete-programming-guide-for-iOS/
-    // https://chenxing640.github.io/2016/10/12/how-to-easily-complete-in-app-purchase-configuration-for-iOS/
+    // https://itenfay.github.io/2016/10/16/in-app-purchase-complete-programming-guide-for-iOS/
+    // https://itenfay.github.io/2016/10/12/how-to-easily-complete-in-app-purchase-configuration-for-iOS/
     // https://www.jianshu.com/p/de030cd6e4a3
     // https://www.jianshu.com/p/1875e0c7ac5d
     
@@ -331,7 +333,7 @@ private void requestToVerifyReceipt(string productId, string transId, string bas
 }
 ```
 
-Finally, after the receipt is verified, you need to complete the corresponding transaction.
+最后，在票据验证通过后，你要完成相应的交易。
 
 ```
 public void finishTransaction(string transactionId, string originalTransactionId)
@@ -355,9 +357,9 @@ public void finishTransaction_(string transactionId)
 }
 ```
 
-- Queries those incompleted transactions.
+- 查询未完成的交易
 
-If there are the receipts in keychain and the receipt verification has not been completed, you need to query them out, and then report them one by one until the transaction, and then delete the corresponding record in the keychain.
+如果票据存在keychain并且没有完成验证，那么你需要查询出来，然后一一进行上报，直至交易，进而删除 keychain 中相应的记录。
 
 ```
 public void queryIncompletedTransactions()
@@ -372,19 +374,19 @@ public void queryIncompletedTransactions()
 ```
 
 
-## Recommended Reference Links
+## 推荐参考链接
 
-- [in-app-purchase-complete-programming-guide-for-iOS](https://chenxing640.github.io/2016/10/16/in-app-purchase-complete-programming-guide-for-iOS/)
-- [how-to-easily-complete-in-app-purchase-configuration-for-iOS](https://chenxing640.github.io/2016/10/12/how-to-easily-complete-in-app-purchase-configuration-for-iOS/)
+- [in-app-purchase-complete-programming-guide-for-iOS](https://itenfay.github.io/2016/10/16/in-app-purchase-complete-programming-guide-for-iOS/)
+- [how-to-easily-complete-in-app-purchase-configuration-for-iOS](https://itenfay.github.io/2016/10/12/how-to-easily-complete-in-app-purchase-configuration-for-iOS/)
 - [https://www.jianshu.com/p/de030cd6e4a3](https://www.jianshu.com/p/de030cd6e4a3)
 - [https://www.jianshu.com/p/1875e0c7ac5d](https://www.jianshu.com/p/1875e0c7ac5d)
 
 
-## Requirements
+## 要求
 
-`Unity_iOS_InAppPurchase` requires `iOS 7.0` or above and `ARC`.
+`Unity_iOS_InAppPurchase`需要`iOS 7.0`或更高版本和ARC。
 
 
-## Feedback is welcome
+## 欢迎反馈
 
-If you notice any issue, got stuck to create an issue. I will be happy to help you.
+如果您发现任何问题，请创建问题。我很乐意帮助你。

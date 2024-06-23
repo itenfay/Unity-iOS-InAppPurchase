@@ -284,8 +284,6 @@ __pycache__/
  
 # Mac crap
 .DS_Store
-*/.DS_Store
-*/*/.DS_Store
 
 # Cocoapods
 Pods/
